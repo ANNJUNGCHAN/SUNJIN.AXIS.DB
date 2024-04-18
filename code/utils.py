@@ -1,7 +1,7 @@
-import re
-import pandas as pd
-import os
 import json
+import os
+from collections import Counter
+from datetime import datetime
 
 def Load_Private_Info(SETTING_PATH) :
     
@@ -17,92 +17,92 @@ def Load_Private_Info(SETTING_PATH) :
         
     return host, port, user, password, db
 
-def filter_log(log_list) : 
+def json_load(SETTING_PATH) :
     
-    real_log = []
+    # JSON 불러오기
+    with open(SETTING_PATH, 'r') as f :
+        json_data = json.load(f)
     
-    for log in log_list :
+    return json_data
+
+def collect_image_list(image_path) :
+    
+    image_result = []
+    image_list = os.listdir(image_path)
+    
+    for image in image_list :
         
-        if 'record_temp' in log :
+        if image == 'labels' :
+            pass
+        
+        elif image == 'database.csv' :
             pass
         
         else :
-            real_log.append(log)
-            
-    return real_log
-
-def find_count(txt_path) :
+            image_result.append(image)
     
-    frames = []
+    return image_result
 
-    with open(txt_path, "r") as f:
-        for line in f:
-            readline = line.strip()
-
-            # 'Frame', 'In', 'Out' 앞의 숫자를 찾는 정규표현식
-            pattern = r"(?<=Frame )\d+|(?<=In )\d+|(?<=Out )\d+"
-
-            # 패턴에 일치하는 모든 부분 찾기
-            matched_nums = re.findall(pattern, readline)
-
-            frames.append(matched_nums)
-
-    return frames[-1][1], frames[-1][2]
-
-def check_string_format(s):
-    pattern = r'^\d{8}'
-    if re.match(pattern, s):
-        return True
-    else:
-        return False
+def extract_label_result(label_path) :
     
-def extract_house_name_and_date(datename) :
+    result = []
     
-    datenamesplit = datename.split("_")
-    
-    remember_list = []
-    # 시간 데이터 위치 확인
-    for index, splitelement in enumerate(datenamesplit) :
-    
-        if check_string_format(splitelement) == True : # 시간 데이터가 리스트에 어디 있는지 체크
-            remember = index # 시간 데이터 위치 저장
-            remember_list.append(remember)
-            
-    # 돈사 이름 파악
-    house_name = ''
-    
-    for index, house_name_element in enumerate(datenamesplit[0:remember_list[0]]) :
+    data_list = []
+
+    with open(label_path, 'r') as file:
+        lines = file.readlines()
         
-        if index < remember_list[0] - 1 :
-            house_name += house_name_element + "_"
+        for line in lines:
+            numbers = line.strip().split()  # 공백으로 숫자 분리
+            data_list.append(numbers)
+            
+        first_element = data_list[0]
+        
+        if len(first_element) == 0 :
+            result.append("OK")
         
         else :
-            house_name += house_name_element
+            result.append("NG")
+            obejct_counting = []
+            for line in data_list :
+                obejct_counting.append(line[0])
+            object_count_result = Counter(obejct_counting)
+            result.append(object_count_result)
+                
+    return result
 
-    return house_name, remember_list[0]
+def convertToDatetime(filetime) :
 
-def extract_todb(LOG_PATH, path) :
-    
-    name = path.replace('.txt','')
-    house_name, remember = extract_house_name_and_date(name)
-    split_name = name.split("_")
+    # 날짜와 시간 부분으로 분리
+    date_part = filetime[:10]  # "2024-04-15"
+    time_part = filetime[11:]  # "175221604"
 
-    ## 시간 만들기
-    start_time = split_name[remember:][0][0:4] + "-" + split_name[remember:][0][4:6] + "-" + split_name[remember:][0][6:8] + " " + split_name[remember:][1][0:2] + ":" + split_name[remember:][1][2:4] + ":" + split_name[remember:][1][4:6]
-    end_time = split_name[remember:][2][0:4] + "-" + split_name[remember:][2][4:6] + "-" + split_name[remember:][2][6:8] + " " + split_name[remember:][3][0:2] + ":" + split_name[remember:][3][2:4] + ":" + split_name[remember:][3][4:6]
-    start_time = pd.to_datetime(start_time)
-    end_time = pd.to_datetime(end_time)
+    # 시간 부분을 시:분:초.밀리초 형식으로 변환
+    formatted_time = f"{time_part[:2]}:{time_part[2:4]}:{time_part[4:6]}.{time_part[6:]}"
 
-    ## 카운터 추출
-    COUNTER = split_name[remember - 1]
+    # 최종 문자열 결합
+    formatted_datetime = f"{date_part} {formatted_time}"
 
-    ## Farm 이름 추출
-    Farm = house_name.split("_")[0]
+    # datetime 객체로 변환하여 정확한 형식 확인
+    datetime_obj = datetime.strptime(formatted_datetime, "%Y-%m-%d %H:%M:%S.%f")
 
-    ## 동 이름 추출
-    House = house_name.replace(Farm + "_","")
+    # 올바른 형식의 문자열로 출력
+    formatted_datetime_string = datetime_obj.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]  # 밀리초의 마지막 자리를 제거
 
-    ## incout, outcount 추출
-    in_count, out_count = find_count(os.path.join(LOG_PATH, path))
-    
-    return Farm, House, COUNTER, start_time, end_time, in_count, out_count
+    return formatted_datetime_string
+
+def convertTofiletime(Datetime) :
+
+    # datetime 객체로 파싱
+    datetime_obj = datetime.strptime(Datetime, "%Y-%m-%d %H:%M:%S.%f")
+
+    # 날짜 부분 추출
+    date_part = datetime_obj.strftime("%Y-%m-%d")
+
+    # 시간 부분을 연속된 문자열로 변환
+    time_part = datetime_obj.strftime("%H%M%S%f")[:9]  # 시간, 분, 초, 밀리초까지 포함
+
+    # 최종 문자열 결합
+    original_string = f"{date_part}-{time_part}"
+
+    return original_string
