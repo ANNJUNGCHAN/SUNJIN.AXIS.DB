@@ -1,4 +1,4 @@
-# 선진 AICCTV DB 구성
+# 선진 AXIS DB 구성
 
 - MySQL로 폐사, 전입, 전출에 관련 데이터를 저장합니다.
 - Docker Compose를 통해 확장성을 강화하였습니다.
