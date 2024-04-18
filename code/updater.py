@@ -11,16 +11,19 @@ while True :
         
         LOG_PATH = "/Drive/SSD1/AICCTV_LOG"
         VIDEO_PATH = "/Drive/HDD/AICCTV_VIDEO"
+        SETTING_PATH = '/code/config.json'
 
         log_list = os.listdir(LOG_PATH)
         log_list = filter_log(log_list)
         
+        host, port, user, password, db = Load_Private_Info(SETTING_PATH)
+        
         # connect sql
-        conn = pymysql.connect(host='193.202.10.89',
-                            port = 10000,
-                            user='root',
-                            password='sunjin1234',
-                            db='AICCTV_MySQL_DB',
+        conn = pymysql.connect(host= host,
+                            port = port,
+                            user=user,
+                            password=password,
+                            db=db,
                             charset='utf8')
 
         cursor = conn.cursor()
