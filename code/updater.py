@@ -20,7 +20,7 @@ while True :
                             port = 10000,
                             user='root',
                             password='sunjin1234',
-                            db='AICCTV_DB',
+                            db='AICCTV_MySQL_DB',
                             charset='utf8')
 
         cursor = conn.cursor()
