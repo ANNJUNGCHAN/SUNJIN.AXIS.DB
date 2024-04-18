@@ -9,7 +9,7 @@ services:
     build:
       context: ./PythonImage
       dockerfile: Dockerfile
-    image: "Python3.10:DB"
+    image: "python3.10:db"
     #############################
 
     container_name: AICCTV_Raw_To_DB
@@ -30,14 +30,12 @@ services:
 
     image: mysql:5.7
     
-    container_name: AICCTV_Raw_To_DB
-    volumes:
-      - AICCTV_MySQL_DB:/var/lib/mysql
+    container_name: AICCTV_MySQL_DB
     environment:
-      - MYSQL_ROOT_PASSWORD: sunjin1234
-      - MYSQL_DATABASE: AICCTV_MySQL_DB
-      - MYSQL_USER: sunjin
-      - MYSQL_PASSWORD: sunjin1234
+      - MYSQL_ROOT_PASSWORD=sunjin1234
+      - MYSQL_DATABASE=AICCTV_MySQL_DB
+      - MYSQL_USER=sunjin
+      - MYSQL_PASSWORD=sunjin1234
     restart: always
     logging:
       driver: "json-file"
