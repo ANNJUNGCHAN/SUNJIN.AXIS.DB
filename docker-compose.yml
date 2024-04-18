@@ -15,7 +15,7 @@ services:
     container_name: AICCTV_Raw_To_DB
     volumes:
       - /media/sunjin:/Drive
-      - ./AICCTV_DB/code:/code
+      - ./code:/code
     environment:
       - TZ=Asia/Seoul
     restart: always
