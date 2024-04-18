@@ -30,6 +30,8 @@ while True :
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
         
+        print("DB 연결 완료")
+        
         if len(log_list) == 0 :
             
             time.sleep(60*60) # 한시간
